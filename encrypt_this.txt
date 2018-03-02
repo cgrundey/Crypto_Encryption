@@ -1,0 +1,9 @@
+This is a file I want to encrypt
+It is a big secret
+The quick brown fox jumped over the lazy dogs
+Hello World
+My name is Colin Grundey
+Principles of Computer Security
+ECE 4264
+Programming assignment II
+Hope this works
