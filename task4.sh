@@ -1,29 +1,40 @@
 #!/bin/bash
 
+# first argument is list of words (i.e. words.txt)
+# sample usage: ./task4.sh words.txt
+# Typical execution time: ~3.5 minutes
+
 filename="$1"
-result=`cat task4result.txt`
+encFile="task4enc.txt"
+decFile="task4dec.txt"
+answer="task4plaintext.txt"
+result=`cat $answer`
 spaces="2020202020202020202020202020202020202020202020202020202020202020"
 
+echo "Cracking the code......."
+
+# Looping through each word in dictionary
 while read line
 do
-	line=`xxd -pu <<< $line`
-	line="${line::-2}"
-	line="$line$spaces"
-	line="${line:0:32}"
+    thekey=$line
+    if [ ${#thekey} -gt 16 ]; then
+      continue
+    fi
+    # Formatting key for openssl input
+    # Hex conversion
+    line=`xxd -pu <<< $line`
+    line="${line::${#line}-2}"
+    # Add spaces to get correct size key
+    line="$line${spaces::32-${#line}}"
 
-	openssl enc -aes-128-cbc -d -in task4enc.txt -out task4dec.txt -K "$line" -iv 0000000000000000
-	
-	test=`cat task4dec.txt`
-	if [ "$result" == "$test" ]
-	then
-		echo "This works!!!!"
-		break
-	fi
+    # Decryption command
+    openssl enc -aes-128-cbc -d -in $encFile -out $decFile -K "$line" -iv 0000000000000000 &>/dev/null
 
-	if cmp -s "task4dec.txt" "task4result.txt" ; then
-		echo "Got it\n Key used: $line\n"
-		break
-	fi
+    # Test if decryption was successful
+    if cmp -s $decFile $answer
+    then
+        echo "FOUND KEY -> $thekey"
+        break
+    fi
 
 done < $filename
-
